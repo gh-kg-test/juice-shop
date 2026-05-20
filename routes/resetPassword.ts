@@ -41,6 +41,10 @@ export function resetPassword () {
       if ((data != null) && security.hmac(answer) === data.answer) {
         const user = await UserModel.findByPk(data.UserId)
         if (user) {
+          if (user.role === security.roles.admin) {
+            res.status(401).send(res.__('Password reset via security question is not allowed for this account.'))
+            return
+          }
           const updatedUser = await user.update({ password: newPassword })
           verifySecurityAnswerChallenges(updatedUser, answer)
           res.json({ user: updatedUser })
